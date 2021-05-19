@@ -5,7 +5,7 @@ options(scipen = 9999)
 
 # ---- data preparation ----
 #dat = read.csv("https://www.dropbox.com/s/cbvgghuoyd9kpve/IA_corn.csv?dl=1")
-dat = readr::read_csv("IA_corn.csv") %>%
+dat = readr::read_csv("data/IA_corn.csv") %>%
   select(-X) %>% # drop first unnamed column
   arrange(fips, year) %>%
   as.matrix()
@@ -24,8 +24,8 @@ te_idx = which(dat[,"year"] >= 2012)
 
 ytr <- y[tr_idx, , drop = F]
 yte <- y[te_idx, , drop = F]
-Xtr <- cbind(fe, parametric, nonparametric)[tr_idx,]
-Xte <- cbind(fe, parametric, nonparametric)[te_idx,]
+Xtr <- cbind(fe, parametric)[tr_idx,]
+Xte <- cbind(fe, parametric)[te_idx,]
 
 
 Xtr_bar <- as_tibble( Xtr ) %>%
@@ -51,11 +51,11 @@ dim(Xtr); dim(Xtr_bar)
 
 
 # remove columns with no variation (plm() and lm() drops these variables automatically)
-vars_no_vari <- which(apply(Xtr_dmd, 2, var) == 0)
-Xtr      <- Xtr[, - vars_no_vari]
-Xtr_dmd <- Xtr_dmd[, - c(vars_no_vari, which(colnames(Xtr_dmd)=="fips"))]
-Xtr_bar <- Xtr_bar[, - c(vars_no_vari, which(colnames(Xtr_bar)=="fips"))]
+
+
+Xtr_dmd <- Xtr_dmd[, - which(colnames(Xtr_dmd)=="fips")]
 writeLines("remove FE column from demeaned data"); dim(Xtr); dim(Xtr_dmd )
+Xtr_bar <- Xtr_bar[, - which(colnames(Xtr_bar)=="fips")]
 
 # ---- fixed-effects regression with plm and lm ----
 # regression equation with all X
@@ -102,11 +102,11 @@ plot(ytr, pred + residuals(mplm)); abline(0, 1, col = 'red', lty = 'dashed', lwd
 
 res <- as.numeric(ytr - pred)
 mres <- as.numeric(residuals(mplm))
-
-
-
-
 all.equal(res, mres)
+
+
+
+
 
 
 
